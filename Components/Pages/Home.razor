@@ -1,0 +1,29 @@
+﻿@page "/"
+
+<PageTitle>Blazor Nested Router</PageTitle>
+
+<h1>Blazor Nested Router</h1>
+
+<div style="max-width: clamp(300px, 75%, 500px)">
+    <p>
+        Nested routers allow child routes to be defined within a parent route, so a child component can route independently of its parent, and without altering the browser URL.
+        <br /><br />
+        This provides enhanced code reusability, better organized code, more efficient rendering in some cases, a UX that would other be impossible or require duplicate code.
+        <br /><br />
+        Blazor has no native support for nested routers like React, Vue, Svelte, and other front-end web frameworks, so I created a proof of concept for adding this functionality.
+    </p>
+    <p>
+        <h2>Examples</h2>
+        The <a href="nesteddialog">Nested Dialog</a> example shows how a nested router can reuse existing pages/components in a dialog box.
+        <br /><br />
+        The <a href="nestedinpage">Nested In-Page</a> example shows how an IFrame-like effect can be accomplished with a nested router, swapping out pages/components in parts of an existing page/component without changing the browser URL.
+    </p>
+    <p>
+        <h2>Notes</h2>
+        This is a proof of concept. More testing will be done and this project will be updated with any issues or fixes as they are found.
+        <br /><br />
+        This has not been tested with Blazor WASM.
+        <br /><br />
+        This has been tested in Blazor 8 &amp; 9;
+    </p>
+</div>

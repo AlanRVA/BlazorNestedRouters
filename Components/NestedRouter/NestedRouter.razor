@@ -1,0 +1,121 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<div>
+    @if (_isNavigated)
+    {
+        @_currentRouteComponent
+    }
+    else
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private RenderFragment _currentRouteComponent;
+    private bool _isNavigated = false;
+    private string _currentRoute;
+    private IDisposable? locationChangingRegistration;
+    private readonly Dictionary<string, Type> _routeComponentMapping = new();
+
+    protected override void OnInitialized()
+    {
+        // Build the route-to-component mapping only once
+        if (_routeComponentMapping.Count == 0)
+        {
+            BuildRouteComponentMapping();
+        }
+
+        // Subscribe to navigation events
+        locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (IsRelativeUri(context.TargetLocation))
+        {
+            // Relative URI: intercept and handle
+            UpdateRoute(context.TargetLocation);
+            context.PreventNavigation();
+        }
+        else
+        {
+            locationChangingRegistration?.Dispose();
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    private bool IsRelativeUri(string targetLocation)
+    {
+        return !Uri.IsWellFormedUriString(targetLocation, UriKind.Absolute);
+    }
+
+    private void OnNavigate(string uri)
+    {
+        UpdateRoute(uri);
+    }
+
+    private void UpdateRoute(string uri)
+    {
+        string trimmedUri = uri.Trim('/');
+
+        // Handle empty route (root)
+        if (string.IsNullOrEmpty(trimmedUri))
+        {
+            trimmedUri = "";
+        }
+
+        _currentRoute = trimmedUri;
+
+        if (_routeComponentMapping.TryGetValue(trimmedUri, out var componentType))
+        {
+            // Create a RenderFragment to render the component
+            _currentRouteComponent = builder =>
+            {
+                builder.OpenComponent(0, componentType);
+                builder.CloseComponent();
+            };
+        }
+        else
+        {
+            // Optionally handle not found routes
+            _currentRouteComponent = builder =>
+            {
+                builder.OpenComponent(0, typeof(NotFoundComponent));
+                builder.CloseComponent();
+            };
+        }
+
+        _isNavigated = true;
+        StateHasChanged();
+    }
+
+    private void BuildRouteComponentMapping()
+    {
+        var components = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => typeof(ComponentBase).IsAssignableFrom(type) && !type.IsAbstract && type != GetType());
+
+        foreach (var component in components)
+        {
+            var routeAttributes = component.GetCustomAttributes(typeof(RouteAttribute), false) as RouteAttribute[];
+            if (routeAttributes != null)
+            {
+                foreach (var routeAttr in routeAttributes)
+                {
+                    _routeComponentMapping[routeAttr.Template.Trim('/')] = component;
+                }
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        locationChangingRegistration?.Dispose();
+    }
+}

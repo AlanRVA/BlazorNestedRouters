@@ -1,0 +1,39 @@
+﻿@inject IJSRuntime JS
+<div class="modal fade" tabindex="-1" role="dialog" id="modalDialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Close</button>
+                @if (OnSave.HasDelegate)
+                {
+                    <button type="button" class="btn btn-primary" @onclick="OnSave">Save changes</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Modal Title";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    public async Task ShowAsync()
+    {
+        await JS.InvokeVoidAsync("blazorModal.show", "#modalDialog");
+    }
+
+    private async Task Close()
+    {
+        await JS.InvokeVoidAsync("blazorModal.hide", "#modalDialog");
+        await OnClose.InvokeAsync();
+    }
+}

@@ -1,0 +1,21 @@
+﻿@page "/nesteddialog"
+
+<h3>Nested Dialog</h3>
+
+@code {
+    private ModalDialog? ModalRef;
+
+    private async Task ShowModal()
+    {
+        if (ModalRef != null)
+        {
+            await ModalRef.ShowAsync();
+        }
+    }
+}
+
+<button class="btn btn-primary" @onclick="ShowModal">Open Modal</button>
+
+<ModalDialog @ref="ModalRef" Title="Nested Router Dialog">
+   <NestedContainer />
+</ModalDialog>
