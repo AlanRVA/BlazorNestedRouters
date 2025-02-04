@@ -1,4 +1,6 @@
-﻿# Blazor Nested Routers
+﻿![Demo animation](./readme_screencap.gif)
+
+# Blazor Nested Routers
 
 <br/>
 
